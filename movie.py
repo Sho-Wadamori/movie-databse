@@ -1,8 +1,26 @@
+'''A sql and python program that can add, remove, update, and list movies in the database'''
+#import tabulate library (table formatting)
+import subprocess
+import sys
+
+try:
+    # Try importing tabulate
+    from tabulate import tabulate
+except ImportError:
+    # If not installed, prompt to install
+    print("Installing 'tabulate'...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "tabulate"])
+    print("'tabulate' installed successfully. Please restart the program.")
+    sys.exit()
+header = ['\033[1mID\033[0m', '\033[1mNAME\033[0m', '\033[1mRATING\033[0m']
+
+#import required libraries
 import sqlite3
 from tabulate import tabulate
-connection = sqlite3.connect("tutorial2/test.db")
+
+#establish connection to movies.db database
+connection = sqlite3.connect("movies.db")
 cursor = connection.cursor()
-header = ['\033[1mID\033[0m', '\033[1mNAME\033[0m', '\033[1mRATING\033[0m']
 
 #integer check
 def isint(input):
@@ -121,12 +139,6 @@ while True:
 
     #List all films
     elif choice == "L":
-        #result = cursor.execute("SELECT * FROM movies")
-        #movies = result.fetchall()
-        #print("\n\033[1mID. - Name | Rating\033[0m")
-        #for movies in movies:
-        #    print(str(movies[0]) + ". - " + movies[1] + "\033[1m | \033[0m" + str(movies[2]))
-        #print("\n")
         style = input("\nWhat style do you want the information in? \nFancy (F) | Simple (S)\n")
         while style_check(style) == False:
             print("\n\033[1mPlease input either 'F' or 'S'!\033[0m\n")
@@ -157,9 +169,13 @@ while True:
 
         print("\n")
 
-        
-    #Stop when nothing inputed
+    #Stop when nothing is inputed
     else:
         break
 
-#pip install tabulate
+#result = cursor.execute("SELECT * FROM movies")
+#movies = result.fetchall()
+#print("\n\033[1mID. - Name | Rating\033[0m")
+#for movies in movies:
+#    print(str(movies[0]) + ". - " + movies[1] + "\033[1m | \033[0m" + str(movies[2]))
+#print("\n")
