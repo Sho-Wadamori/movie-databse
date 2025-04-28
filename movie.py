@@ -1,4 +1,4 @@
-'''A sql and python program that can add, remove, update, and list movies in the database'''
+'''A sql and python program that can add, remove, update, and list movies in the movies.db database'''
 #import tabulate library (table formatting)
 import subprocess
 import sys
@@ -48,12 +48,14 @@ def findid(input):
     else:
         return True
 
+#check if style input is valid
 def style_check(input):
     if input.lower() == "f" or input.lower() == "s":
         return True
     else:
         return False
 
+#check if order input is valid
 def order_check(input):
     if input.lower() == "i" or input.lower() == "n" or input.lower() == "r":
         return True
@@ -91,7 +93,7 @@ while True:
             print("\n\033[1mPlease input an integer of an existing movie's id!\033[0m\n")
             update_id = input("Please enter the ID of the movie you want to update\n")
             
-        update_name = input("\nPlease enter a new name for the movie\n")
+        update_name = input("\nPlease enter a new name for the movie\n").upper()
         update_rating = input("\nPlease enter your rating of the movie (1 - 10)\n")
         #check if valid
         while isint(update_rating) == False or is_valid_rating(update_rating) == False:
@@ -99,7 +101,18 @@ while True:
             update_rating = input("\nPlease enter your rating of the movie (1 - 10)\n")
         
         #update confirmation
-        
+        data = [update_id]
+        update_id_name = cursor.execute("SELECT name FROM movies WHERE id=?",data)
+        confirmation_name = update_id_name.fetchall()
+
+        update_id_rating = cursor.execute("SELECT rating FROM movies WHERE id=?",data)
+        confirmation_rating = update_id_rating.fetchall()
+
+        confirmation = input(f"\nAre you sure you want to update the movie \033[1m{confirmation_name[0][0]}\033[0m with ID \033[1m{update_id}\033[0m and rating of \033[1m{confirmation_rating[0][0]}\033[0m to \033[1m{update_name}\033[0m and a rating of \033[1m{update_rating}\033[0m? (Y/N):\n").strip().upper()
+        if confirmation == "N":
+            print("\n\033[1mUpdating canceled.\033[0m\n")
+            continue
+
         #update database
         data = [update_name, update_rating, update_id]
         cursor.execute("UPDATE movies SET name=?, rating=? WHERE id=?",data)
@@ -139,16 +152,19 @@ while True:
 
     #List all films
     elif choice == "L":
+        #get style
         style = input("\nWhat style do you want the information in? \nFancy (F) | Simple (S)\n")
         while style_check(style) == False:
             print("\n\033[1mPlease input either 'F' or 'S'!\033[0m\n")
             style = input("\nWhat style do you want the information in? \nFancy (F) | Simple (S)\n")
 
+        #get order
         order_input = input("\nWhat do you want the list ordered by? \nID (I) | Name (N) | Rating (R)\n")
         while order_check(order_input) == False:
             print("\n\033[1mPlease input either 'I', 'N' or 'R'!\033[0m\n")
             order_input = input("\nWhat do you want the list ordered by? \nID (I) | Name (N) | Rating (R)\n")
         
+        #change ordering to inputed order
         if order_input.lower() == "i":
             order = "id"
         elif order_input.lower() == "n":
@@ -172,10 +188,3 @@ while True:
     #Stop when nothing is inputed
     else:
         break
-
-#result = cursor.execute("SELECT * FROM movies")
-#movies = result.fetchall()
-#print("\n\033[1mID. - Name | Rating\033[0m")
-#for movies in movies:
-#    print(str(movies[0]) + ". - " + movies[1] + "\033[1m | \033[0m" + str(movies[2]))
-#print("\n")
