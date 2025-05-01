@@ -1,4 +1,9 @@
-'''A sql and python program that can add, remove, update, and list movies in the movies.db database'''
+'''A sql and python program that can:
+Add, Remove, Update, and List movies in the movies.db database'''
+# import required libraries
+import sqlite3
+from tabulate import tabulate
+
 # import tabulate library (table formatting)
 import subprocess
 import sys
@@ -13,10 +18,6 @@ except ImportError:
     print("'tabulate' installed successfully. Please restart the program.")
     sys.exit()
 header = ['\033[1mID\033[0m', '\033[1mNAME\033[0m', '\033[1mRATING\033[0m']
-
-# import required libraries
-import sqlite3
-from tabulate import tabulate
 
 # establish connection to movies.db database
 connection = sqlite3.connect("movies.db")
@@ -43,7 +44,7 @@ def is_valid_rating(input):
 # check if id exists
 def findid(input):
     data = [input]
-    cursor.execute("SELECT id FROM movies WHERE id=?",data)
+    cursor.execute("SELECT id FROM movies WHERE id=?", data)
     connection.commit()
     output = cursor.fetchall()
     if len(output) == 0 or int(input) <= 0:
@@ -69,7 +70,11 @@ def order_check(input):
 
 
 while True:
-    choice = input("Press \033[1mA\033[0m to add a movie, \033[1mU\033[0m to update a movie, \033[1mD\033[0m to delete a movie, and \033[1mL\033[0m to list all movies.\n").upper()
+    print("Press \033[1mA\033[0m to add a movie")
+    print("Press \033[1mU\033[0m to update a movie")
+    print("Press \033[1mD\033[0m to delete a movie")
+    print("Press \033[1mL\033[0m to list all movies")
+    choice = input("").upper()
 
     # Add a new film
     if choice == "A":
@@ -81,13 +86,15 @@ while True:
             add_rating = input("Please enter your rating of the movie (1 - 10)\n")
         # add to database
         data = [add_name, add_rating]
-        cursor.execute("INSERT INTO 'movies' ('name', 'rating') VALUES (?, ?)",data)
+        cursor.execute("INSERT INTO 'movies' ('name', 'rating') VALUES (?, ?)", data)
         connection.commit()
 
         # add successful notice
         add_id = cursor.execute("SELECT id FROM movies ORDER BY id DESC LIMIT 1")
         add_id_confirmation = add_id.fetchall()
-        print(f"\n\033[1m'{add_name}'\033[0m has been added into the database with the id \033[1m'{add_id_confirmation[0][0]}'\033[0m with a rating of \033[1m'{add_rating}'\033[0m.\n")
+        print(f"\n\033[1m'{add_name}'\033[0m has been added into the database with:")
+        print(f"Id: \033[1m'{add_id_confirmation[0][0]}'\033[0m")
+        print(f"Rating: \033[1m'{add_rating}'\033[0m\n")
 
         print("\n")
 
@@ -98,23 +105,26 @@ while True:
         while isint(update_id) == False or findid(update_id) == False:
             print("\n\033[1mPlease input an integer of an existing movie's id!\033[0m\n")
             update_id = input("Please enter the ID of the movie you want to update\n")
-            
+
         update_name = input("\nPlease enter a new name for the movie\n").upper()
         update_rating = input("\nPlease enter your rating of the movie (1 - 10)\n")
         # check if valid
         while isint(update_rating) == False or is_valid_rating(update_rating) == False:
             print("\n\033[1mPlease input an integer from 1 to 10!\033[0m\n")
             update_rating = input("\nPlease enter your rating of the movie (1 - 10)\n")
-        
+
         # update confirmation
         data = [update_id]
-        update_id_name = cursor.execute("SELECT name FROM movies WHERE id=?",data)
+        update_id_name = cursor.execute("SELECT name FROM movies WHERE id=?", data)
         confirmation_name = update_id_name.fetchall()
 
-        update_id_rating = cursor.execute("SELECT rating FROM movies WHERE id=?",data)
+        update_id_rating = cursor.execute("SELECT rating FROM movies WHERE id=?", data)
         confirmation_rating = update_id_rating.fetchall()
 
-        confirmation = input(f"\nAre you sure you want to update the movie \033[1m{confirmation_name[0][0]}\033[0m with ID \033[1m{update_id}\033[0m and rating of \033[1m{confirmation_rating[0][0]}\033[0m to \033[1m{update_name}\033[0m and a rating of \033[1m{update_rating}\033[0m? (Y/N):\n").strip().upper()
+        print(f"\nAre you sure you want to update the movie with id \033[1m{update_id}\033[0m:")
+        print(f"Name: From \033[1m{confirmation_name[0][0]}\033[0m to \033[1m{update_name}\033[0m")
+        print(f"Rating: From \033[1m{confirmation_rating[0][0]}\033[0m to \033[1m{update_rating}\033[0m?")
+        confirmation = input("\n(Y/N):\n").strip().upper()
         if confirmation == "N":
             print("\n\033[1mUpdating canceled.\033[0m\n")
             continue
@@ -125,8 +135,9 @@ while True:
         connection.commit()
 
         # update successful notice
-        print(f"\nThe film with ID \033[1m'{update_id}'\033[0m has been updated into the database with the name \033[1m'{update_name}'\033[0m with a rating of \033[1m'{update_rating}'\033[0m.\n")
-
+        print(f"\nThe film with ID \033[1m'{update_id}'\033[0m has been updated into the database with:")
+        print(f"Name: From \033[1m{confirmation_name[0][0]}\033[0m to \033[1m{update_name}\033[0m")
+        print(f"Rating: From \033[1m{confirmation_rating[0][0]}\033[0m to \033[1m{update_rating}\033[0m?\n")
         print("\n")
 
     # Delete a film
@@ -136,10 +147,10 @@ while True:
         while isint(delete_id) == False or findid(delete_id) == False:
             print("\n\033[1mPlease input a positive integer of an existing movie's ID!\033[0m")
             delete_id = input("\nPlease enter the ID of the movie you want to delete\n")
-        
+
         # ask for confirmation
         data = [delete_id]
-        delete_id_name = cursor.execute("SELECT name FROM movies WHERE id=?",data)
+        delete_id_name = cursor.execute("SELECT name FROM movies WHERE id=?", data)
         confirmation_name = delete_id_name.fetchall()
         confirmation = input(f"\nAre you sure you want to delete the movie \033[1m{confirmation_name[0][0]}\033[0m with ID \033[1m{delete_id}\033[0m? (Y/N):\n").strip().upper()
         if confirmation == "N":
@@ -148,7 +159,7 @@ while True:
 
         # update database
         data = [delete_id]
-        cursor.execute("DELETE FROM movies WHERE id=?",data)
+        cursor.execute("DELETE FROM movies WHERE id=?", data)
         connection.commit()
 
         # deletion successful notice
@@ -162,14 +173,18 @@ while True:
         style = input("\nWhat style do you want the information in? \nFancy (F) | Simple (S)\n")
         while style_check(style) == False:
             print("\n\033[1mPlease input either 'F' or 'S'!\033[0m\n")
-            style = input("\nWhat style do you want the information in? \nFancy (F) | Simple (S)\n")
+
+            print("\nWhat style do you want the information in?")
+            style = input("Fancy (F) | Simple (S)\n")
 
         # get order
-        order_input = input("\nWhat do you want the list ordered by? \nID (I) | Name (N) | Rating (R)\n")
+        print("\nWhat do you want the list ordered by?")
+        order_input = input("ID (I) | Name (N) | Rating (R)\n")
         while order_check(order_input) == False:
             print("\n\033[1mPlease input either 'I', 'N' or 'R'!\033[0m\n")
-            order_input = input("\nWhat do you want the list ordered by? \nID (I) | Name (N) | Rating (R)\n")
-        
+            print("\nWhat do you want the list ordered by?")
+            order_input = input("ID (I) | Name (N) | Rating (R)\n")
+
         # change ordering to inputed order
         if order_input.lower() == "i":
             order = "id"
@@ -177,7 +192,7 @@ while True:
             order = "name"
         else:
             order = "rating"
-        
+
         data = [order]
         if order == "rating":
             cursor.execute(f'SELECT * FROM movies ORDER BY {order} DESC')
